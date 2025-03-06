@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.String?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ChoiceBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.VBox?>
+
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" styleClass="Login_container" stylesheets="@../Styles/Login.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.app.Controllers.loginController">
+   <VBox prefHeight="400.0" prefWidth="170.0" styleClass="Login_logo_container" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0">
+      <ImageView fitHeight="200.0" fitWidth="199.0">
+         <Image url="@../Images/Logo.png" />
+      </ImageView>
+   </VBox>
+   <VBox layoutX="188.0" layoutY="20.0" prefHeight="200.0" prefWidth="315.0" styleClass="Login_Form_container" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="210.0" AnchorPane.rightAnchor="12.0" AnchorPane.topAnchor="20.0">
+      <Label fx:id="account_type_label" prefHeight="22.0" prefWidth="127.0" styleClass="label-ba" stylesheets="@../Styles/Login.css" text="Account Type : ">
+         <VBox.margin>
+            <Insets bottom="5.0" top="5.0" />
+         </VBox.margin>
+      </Label>
+      <ChoiceBox fx:id="accout_choice_selector" prefWidth="150.0" />
+      <Label fx:id="email_label" styleClass="label-ba" text="Email:">
+         <VBox.margin>
+            <Insets bottom="5.0" left="20.0" top="5.0" />
+         </VBox.margin>
+      </Label>
+      <TextField fx:id="email_input" />
+      <Label fx:id="phone_label" styleClass="label-ba" text="Phone Number:">
+         <VBox.margin>
+            <Insets bottom="5.0" left="20.0" top="5.0" />
+         </VBox.margin>
+      </Label>
+      <TextField fx:id="phone_input" />
+      <Label fx:id="adresse_label" styleClass="label-ba" text="Adress:">
+         <VBox.margin>
+            <Insets bottom="5.0" left="20.0" top="5.0" />
+         </VBox.margin>
+      </Label>
+      <TextField fx:id="adress_input" />
+      <Label fx:id="password_label" styleClass="label-ba" text="Password : ">
+         <VBox.margin>
+            <Insets bottom="5.0" left="20.0" top="5.0" />
+         </VBox.margin>
+      </Label>
+      <TextField fx:id="password_input" />
+      <Label fx:id="error_label" prefHeight="22.0" prefWidth="322.0" text="Email or password is incorrect">
+         <styleClass>
+            <String fx:value="errorMessage" />
+            <String fx:value="errorMessage" />
+         </styleClass>
+         <VBox.margin>
+            <Insets left="30.0" />
+         </VBox.margin>
+      </Label>
+      <Button fx:id="submit_btn" mnemonicParsing="false" prefHeight="45.0" prefWidth="117.0" text="Submit">
+         <VBox.margin>
+            <Insets left="120.0" top="5.0" />
+         </VBox.margin>
+      </Button>
+   </VBox>
+
+</AnchorPane>
