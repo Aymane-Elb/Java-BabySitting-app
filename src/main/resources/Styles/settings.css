@@ -1,0 +1,43 @@
+.containerUser{
+    -fx-background-color: #222;
+    -fx-text-fill:#FFF;
+}
+.containerUser Label{
+    -fx-text-fill:#FFF;
+    -fx-font-size: 1.6em;
+    -fx-alignment: center;
+    -fx-text-alignment: center;
+
+}
+.btn Button{
+      -fx-background-color: transparent;
+     -fx-text-fill:#FFF;
+     -fx-font-size: 1.2 em;
+     -fx-font-weight: Bold;
+     -fx-border-width:1px ;
+     -fx-border-color: #222;
+     -fx-background-radius:60%;
+     -fx-border-radius:60%;
+     -fx-alignment: center;
+     -fx-text-alignment: center;
+}
+.containerUser Label{
+    -fx-text-fill:#FFF;
+    -fx-font-size: 1.6em;
+    -fx-alignment: center;
+    -fx-text-alignment: center;
+
+}
+.container{
+    -fx-text-fill:#FFF;
+    -fx-alignment: center;
+    -fx-text-alignment: center;
+    -fx-font-size: 1.5em;
+
+}
+
+
+
+
+
+

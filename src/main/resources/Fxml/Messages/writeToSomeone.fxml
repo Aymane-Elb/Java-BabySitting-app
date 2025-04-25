@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
+
+<AnchorPane prefHeight="600.0" prefWidth="1000.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.app.Controllers.Contact.Contact">
+   <HBox layoutX="74.0" layoutY="108.0" prefHeight="100.0" prefWidth="200.0" styleClass=".container" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+      <VBox prefHeight="600.0" prefWidth="186.0" styleClass="btnContainer" stylesheets="@../../Styles/message.css">
+         <Button fx:id="menuBtn" mnemonicParsing="false" prefHeight="37.0" prefWidth="152.0" styleClass="btn" stylesheets="@../../Styles/message.css">
+            <graphic>
+            </graphic>
+            <graphic>
+               <FontIcon iconColor="WHITE" iconLiteral="fas-bars" iconSize="20" />
+            </graphic>
+         </Button>
+         <Button fx:id="writeBtn" mnemonicParsing="false" prefHeight="36.0" prefWidth="170.0" styleClass="btn" stylesheets="@../../Styles/message.css" text="Write">
+            <graphic>
+               <FontIcon iconColor="WHITE" iconLiteral="fas-pencil-alt" iconSize="20" text="   " />
+            </graphic>
+         </Button>
+         <Button fx:id="inboxBtn" alignment="TOP_LEFT" mnemonicParsing="false" prefHeight="36.0" prefWidth="177.0" styleClass="btn" stylesheets="@../../Styles/message.css" text="Inbox">
+            <graphic>
+               <FontIcon iconColor="WHITE" iconLiteral="fas-inbox" iconSize="20" text="" />
+            </graphic>
+         </Button>
+         <Button fx:id="messageBtn" mnemonicParsing="false" prefHeight="36.0" prefWidth="173.0" styleClass="btn" stylesheets="@../../Styles/message.css" text=" Messages">
+            <graphic>
+               <FontIcon iconColor="WHITE" iconLiteral="fas-envelope" iconSize="20" text="" />
+            </graphic>
+         </Button>
+         <Button fx:id="favoriteBtn" mnemonicParsing="false" prefHeight="36.0" prefWidth="179.0" styleClass="btn" stylesheets="@../../Styles/message.css" text="favorite">
+            <graphic>
+               <FontIcon iconColor="WHITE" iconLiteral="fas-star" iconSize="20" text="  " />
+            </graphic>
+         </Button>
+         <Button fx:id="homeBtn" mnemonicParsing="false" prefHeight="36.0" prefWidth="178.0" styleClass="btn" stylesheets="@../../Styles/message.css" text="Go Back">
+            <graphic>
+               <FontIcon iconColor="WHITE" iconLiteral="fas-home" iconSize="20" text="  " />
+            </graphic>
+         </Button>
+         <Button fx:id="settingBtn" mnemonicParsing="false" prefHeight="36.0" prefWidth="173.0" styleClass="btn" stylesheets="@../../Styles/message.css" text="settings">
+            <graphic>
+               <FontIcon iconColor="WHITE" iconLiteral="fas-cog" iconSize="20" text="  " />
+            </graphic>
+         </Button>
+      </VBox>
+      <VBox prefHeight="600.0" prefWidth="897.0">
+         <Label fx:id="newMessageLabel" prefHeight="32.0" prefWidth="339.0" text="         New Message" />
+         <TextField fx:id="toInput" promptText="To" />
+         <TextField fx:id="subjectInput" promptText="Subject" />
+         <TextArea fx:id="informationInput" prefHeight="431.0" prefWidth="877.0" />
+         <FontIcon />
+         <Button fx:id="sendBtn" mnemonicParsing="false" styleClass="btn" stylesheets="@../../Styles/message.css" text="Send">
+            <graphic>
+               <FontIcon iconColor="WHITE" iconLiteral="fas-paper-plane" />
+            </graphic>
+         </Button>
+      </VBox>
+   </HBox>
+</AnchorPane>

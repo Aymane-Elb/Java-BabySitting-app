@@ -1,5 +1,5 @@
 .Login_container{
--fx-background-color: #ffffff;
+-fx-background-color: #333333;
 }
 .Login_logo_container{
   -fx-background-color:#4F95FF;
@@ -15,30 +15,90 @@
 .Login_Form_container{
   -fx-font-size:1.2em;
 }
+.image{
+    -fx-width: 50%;
+    -fx-height: 50%;
+    -fx-translate-x: 50%;
+    -fx-translate-y: 50%;}
 .label-ba{
-    -fx-font-size: 1.2em;
-    -fx-font-family:Serif;
-    -fx-font-weight: bold;
+     -fx-font-weight: 800;
+     -fx-text-fill: white; /* Slightly lighter gray for labels */
+    -fx-font-size: 1.4rem;
+    -fx-font-family: sans-serif;
 }
 .Login_Form_container Button{
     -fx-background-color: #4F95FF;
     -fx-text-fill: white;
-    -fx-border: 1px solid black;
-    -fx-border-radius:  6%;
+    -fx-border-width:0px;
+    -fx-border-radius:  6px;
+    -fx-background-radius:  7px;
     -fx-font-size: 1.3em;
-    -fx-font-family: Serif;
+    -fx-font-family:cursive;
     -fx-padding: 12px 28px;
     -fx-text-align: center;
+    -fx-font-weight: bold;
 }
 .Login_Form_container Button:hover{
     -fx-background-color: #A4C8FF;
-    -fx-text-fill: black;
-    -fx-border:none;
-    -fx-border-radius: none;
+    -fx-font-family: sans-serif;
+    -fx-border-color:none;
+    -fx-border-width:0px;
+    -fx-border-radius:  6px;
+    -fx-background-radius: 6px;
     -fx-cursor:hand;
+}
+.input{
+         -fx-padding: 0.75rem 1rem;
+         -fx-font-size: 1rem;
+         -fx-text-fill: black;
+         -fx-font-weight: bold;
+         -fx-font-family: sans-serif;
+         -fx-border-color: #333;
+         -fx-background-color: white;
+         -fx-border-width: 1px ;
+         -fx-border-radius:  2px 3px 2px 3px;
+
 }
 .Login_Form_container .errorMessage{
      -fx-text-fill:red;
     -fx-font-size: 1em;
     -fx-text-align:center;
+ }
+ .passwordInput{
+    -fx-background-color:#5C2D6E;
+    -fx-text-fill: black;
+    -fx-border-color: white;
+     -fx-font-weight: bold;
+
+ }
+/*.Login_Form_container Button{
+     -fx-background-color: #4F95FF;
+     -fx-border-radius: 15px 30px 15px 30px;
+     -fx-background-radius: 6px 20px 6px 20px;
+     -fx-border-style: solid;
+     -fx-border-width: 2px;
+     -fx-border-color: black;
+     -fx-effect: drop shadow(gaussian, rgba(0, 0, 0, 0.2), 25, 0, 15, 28);
+     -fx-text-fill: #41403e;
+     -fx-cursor: hand;
+     -fx-font-family:'Poppins', Arial, sans-serif "Nescha";
+     -fx-font-size: 16px;
+     -fx-padding: 12px;
+     -fx-focus-color: transparent;
+     -fx-faint-focus-color: transparent;
+     -fx-underline: false;
+ }
+
+.Login_Form_container Button:hover{
+     -fx-effect: drop shadow(gaussian, rgba(0, 0, 0, 0.3), 8, 0, 2, 8);
+    -fx-background-color: #A4C8FF;
+    -fx-border-radius: 6px;
+    -fx-border-style: solid;
+    -fx-border-width: 2px;
+    -fx-border-color: white;
+    -fx-background-radius:6px;
+ }
+
+.Login_Form_container Button:focused {
+     -fx-effect: drop shadow(gaussian, rgba(0, 0, 0, 0.3), 4, 0, 2, 8);
  }
