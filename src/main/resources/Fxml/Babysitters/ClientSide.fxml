@@ -8,13 +8,9 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.text.Font?>
-<?import javafx.scene.web.WebView?>
 <?import org.kordamp.ikonli.javafx.FontIcon?>
 
-<StackPane xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.app.Controllers.Client.clientControler">
-   <AnchorPane fx:id="controlsPane" mouseTransparent="true" style="-fx-background-color: transparent;">
-      <WebView fx:id="mapView" layoutY="231.0" prefHeight="464.0" prefWidth="668.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="348.0" AnchorPane.topAnchor="231.0" />
-   </AnchorPane>
+<StackPane xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.app.Controllers.Client.clientController">
    <AnchorPane prefHeight="695.0" prefWidth="1016.0" styleClass="container" stylesheets="@../../Styles/ClientSide.css">
       <HBox layoutX="170.0" layoutY="176.0" prefHeight="84.0" prefWidth="1080.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
          <TextField fx:id="searchInput" prefHeight="35.0" prefWidth="700.0" promptText="City or postal code">
@@ -34,6 +30,7 @@
             </graphic>
          </Button>
       </HBox>
+      <ListView fx:id="babysitterList" layoutX="245.0" layoutY="188.0" prefHeight="200.0" prefWidth="200.0" styleClass="viewList" stylesheets="@../../Styles/ClientSide.css" AnchorPane.bottomAnchor="100.0" AnchorPane.leftAnchor="20.0" AnchorPane.rightAnchor="20.0" AnchorPane.topAnchor="100.0" />
       <HBox layoutX="157.0" layoutY="500.0" prefHeight="84.0" prefWidth="1016.0" styleClass="btnContainer" stylesheets="@../../Styles/ClientSide.css" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
          <Button fx:id="searchBtn1" mnemonicParsing="false" prefHeight="61.0" prefWidth="120.0" styleClass="btn" stylesheets="@../../Styles/ClientSide.css" text="Search" onAction="#onSearchBtn1">
             <graphic>
@@ -59,7 +56,7 @@
                <Insets />
             </HBox.margin>
          </Button>
-         <Button fx:id="accountBtn" mnemonicParsing="false" prefHeight="61.0" prefWidth="120.0" styleClass="btn" stylesheets="@../../Styles/ClientSide.css" text="Account" onAction="#openAccontWindow">
+         <Button fx:id="accountBtn" mnemonicParsing="false" prefHeight="61.0" prefWidth="120.0" styleClass="btn" stylesheets="@../../Styles/ClientSide.css" text="Log Out" onAction="#openAccontWindow">
             <graphic>
                <FontIcon iconColor="WHITE" iconLiteral="fas-user" />
             </graphic>
@@ -68,6 +65,5 @@
             </HBox.margin>
          </Button>
       </HBox>
-      <ListView fx:id="babySitersList" layoutX="245.0" layoutY="188.0" prefHeight="200.0" prefWidth="200.0" styleClass="viewList" stylesheets="@../../Styles/ClientSide.css" AnchorPane.bottomAnchor="100.0" AnchorPane.leftAnchor="20.0" AnchorPane.rightAnchor="20.0" AnchorPane.topAnchor="100.0" />
    </AnchorPane>
 </StackPane>

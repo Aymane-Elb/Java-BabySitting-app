@@ -71,6 +71,92 @@
      -fx-font-weight: bold;
 
  }
+ /* Main background styles */
+ .root {
+     -fx-background-color: #87CEEB; /* Baby blue background */
+ }
+
+ /* Login container styling */
+ .Login_container {
+     -fx-background-color: #87CEEB; /* Baby blue background */
+     -fx-background-radius: 0;
+ }
+
+ /* Logo container styling */
+ .Login_logo_container {
+     -fx-alignment: center;
+     -fx-spacing: 15;
+ }
+
+ /* Form container styling */
+ .Login_Form_container {
+     -fx-background-color: rgba(255, 255, 255, 0.85);
+     -fx-background-radius: 10;
+     -fx-padding: 15;
+     -fx-spacing: 5;
+     -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.3), 10, 0, 0, 5);
+ }
+
+ /* Label styling */
+ .label-ba {
+     -fx-text-fill: #87CEEB;
+     -fx-font-weight: bold;
+     -fx-font-size: 14px;
+     -fx-alignment: left;
+ }
+
+ /* Input fields styling */
+ .input {
+     -fx-background-color: #f0f0f0;
+     -fx-background-radius: 5;
+     -fx-border-color: #e0e0e0;
+     -fx-border-radius: 5;
+     -fx-padding: 8;
+     -fx-opacity: 1;
+ }
+
+ .input:focused {
+     -fx-border-color: #87CEEB;
+     -fx-opacity: 1;
+ }
+
+ /* Error message styling */
+ .errorMessage {
+     -fx-text-fill: #ff3333;
+     -fx-font-size: 12px;
+ }
+
+ /* Button styling (importing from ClientSide.css for consistency) */
+ .btn {
+     -fx-background-color: #3D5A80;
+     -fx-text-fill: white;
+     -fx-font-weight: bold;
+     -fx-background-radius: 5;
+     -fx-cursor: hand;
+ }
+
+ .btn:hover {
+     -fx-background-color: #2D4A70;
+ }
+
+ /* Media queries for different screen sizes */
+ /* Small screens */
+ @media screen and (max-width: 400px) {
+     .Login_container {
+         -fx-padding: 10;
+     }
+
+     .input, .btn {
+         -fx-font-size: 12px;
+     }
+ }
+
+ /* Large screens */
+ @media screen and (min-width: 800px) {
+     .Login_container {
+         -fx-padding: 20;
+     }
+ }
 /*.Login_Form_container Button{
      -fx-background-color: #4F95FF;
      -fx-border-radius: 15px 30px 15px 30px;

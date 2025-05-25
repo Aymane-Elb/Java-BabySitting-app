@@ -1,22 +1,65 @@
 .btn{
-        -fx-background-color: #2b2b2b;
-        -fx-text-fill: #ffffff;
-        -fx-font-size: 14px;
-        -fx-padding: 8 16;
-        -fx-background-radius: 8;
-        -fx-border-radius: 8;
-        -fx-border-color: #444;
-        -fx-border-width: 1;
-        -fx-cursor: hand;
-        -fx-effect: drop shadow(gaussian, rgba(0,0,0,0.3), 4, 0.5, 0.0, 1.5);
-        -fx-transition: all 0.3s ease-in-out;
+    -fx-alignment: center;
+    -fx-background-color: #2b2b2b;
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 14px;
+    -fx-padding: 8 16;
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+    -fx-border-color: #444;
+    -fx-border-width: 1;
+    -fx-cursor: hand;
+    -fx-effect: drop shadow(gaussian, rgba(0,0,0,0.3), 4, 0.5, 0.0, 1.5);
 }
-.btn:hover{
+
+.btn:hover {
     -fx-background-color: #3c3f41;
     -fx-border-color: #555;
-    }
-.btn:pressed{
-    -fx-background-color: #1e1e1e;}
-.btnContainer{
-     -fx-background-color: #333333;
+}
+
+.btn:pressed {
+    -fx-background-color: #1e1e1e;
+}
+
+.searchInput {
+    -fx-padding: 10;
+    -fx-font-size: 14px;
+    -fx-background-radius: 5;
+    -fx-border-radius: 5;
+    -fx-border-width: 1;
+    -fx-border-color: #444;
+}
+
+.btnContainer {
+    -fx-background-color: #333333;
+    -fx-min-width: 180;
+    -fx-max-width: 180;
+}
+
+.emailListView {
+    -fx-background-color: #f5f5f5;
+    -fx-background-radius: 5;
+    -fx-border-radius: 5;
+    -fx-border-width: 1;
+    -fx-border-color: #ddd;
+}
+
+.emailListView .list-cell {
+    -fx-padding: 8 12;
+    -fx-font-size: 14px;
+}
+
+.emailListView .list-cell:odd {
+    -fx-background-color: #f9f9f9;
+}
+
+.emailListView .list-cell:selected {
+    -fx-background-color: #0078d7;
+    -fx-text-fill: white;
+}
+
+/* Responsive adjustments */
+/* These are JavaFX pseudo-classes for screen sizes, not CSS media queries */
+.root {
+    -fx-font-family: "Segoe UI", Arial, sans-serif;
 }

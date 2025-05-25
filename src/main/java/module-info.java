@@ -18,6 +18,7 @@ module com.example.app {
 
     //maps
     // Java core
+    requires java.mail;
     requires java.sql;
     requires java.desktop;
     requires java.xml.crypto;

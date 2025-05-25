@@ -50,4 +50,5 @@
     -fx-background-color: #333333;
     -fx-text-fill:#FFF;
     -fx-font-size: 1.5em;
+    -fx-alignment: center;
 }

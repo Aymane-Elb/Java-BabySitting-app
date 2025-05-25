@@ -1,0 +1,129 @@
+/* Main background styles - to be included in Login.css */
+.root {
+    -fx-background-color: #87CEEB; /* Baby blue background */
+}
+
+/* Registration container styling */
+.Register_container {
+    -fx-background-color: #87CEEB; /* Baby blue background */
+    -fx-background-radius: 0;
+}
+
+/* Logo container styling */
+.Login_logo_container {
+    -fx-background-color: #4F95FF;
+    -fx-alignment: center;
+    -fx-padding: 20;
+}
+
+/* Form container styling */
+.Login_Form_container {
+    -fx-background-color: rgba(255, 255, 255, 0.85);
+    -fx-background-radius: 10;
+    -fx-padding: 15;
+    -fx-spacing: 5;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.3), 10, 0, 0, 5);
+}
+
+/* Label styling */
+.label-ba {
+    -fx-text-fill: #87CEEB;
+    -fx-font-weight: bold;
+    -fx-font-size: 14px;
+}
+
+/* Input fields styling */
+.input {
+    -fx-background-color: #f0f0f0;
+    -fx-background-radius: 5;
+    -fx-border-color: #e0e0e0;
+    -fx-border-radius: 5;
+    -fx-padding: 8;
+    -fx-opacity: 1; /* Fix for opacity issues */
+}
+
+.input:focused {
+    -fx-border-color: #87CEEB;
+    -fx-opacity: 1;
+}
+
+/* Choice Box styling */
+.choice-box {
+    -fx-background-color: #f0f0f0;
+    -fx-background-radius: 5;
+    -fx-border-color: #e0e0e0;
+    -fx-border-radius: 5;
+    -fx-padding: 5;
+}
+
+.choice-box:focused {
+    -fx-border-color: #87CEEB;
+}
+
+.choice-box .context-menu {
+    -fx-background-color: white;
+    -fx-background-insets: 0, 1;
+    -fx-background-radius: 0;
+}
+
+.choice-box .menu-item:focused {
+    -fx-background-color: #87CEEB;
+}
+
+.choice-box .menu-item > .label {
+    -fx-text-fill: #333333;
+}
+
+.choice-box .menu-item:focused > .label {
+    -fx-text-fill: white;
+}
+
+/* Error message styling */
+.errorMessage {
+    -fx-text-fill: #ff3333;
+    -fx-font-size: 12px;
+}
+
+/* Button styling (can be imported from ClientSide.css) */
+.btn {
+    -fx-background-color: #3D5A80;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-background-radius: 5;
+    -fx-cursor: hand;
+}
+
+.btn:hover {
+    -fx-background-color: #2D4A70;
+}
+
+/* Responsive design for different screen sizes */
+/* Small screens - adjust to vertical layout */
+@media screen and (max-width: 600px) {
+    .Login_logo_container {
+        -fx-max-height: 150;
+    }
+
+    .Login_Form_container {
+        -fx-padding: 10;
+    }
+
+    .label-ba, .input, .btn {
+        -fx-font-size: 12px;
+    }
+}
+
+/* Medium screens */
+@media screen and (min-width: 601px) and (max-width: 900px) {
+    .Login_logo_container ImageView {
+        -fx-fit-height: 150;
+        -fx-fit-width: 150;
+    }
+}
+
+/* Large screens */
+@media screen and (min-width: 901px) {
+    .Login_Form_container {
+        -fx-padding: 20;
+    }
+}
