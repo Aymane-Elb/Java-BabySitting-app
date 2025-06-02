@@ -4,8 +4,7 @@ import com.example.app.Models.Database; // Assuming this connects to your DB
 import com.example.app.Models.User;
 import com.example.app.Models.hashPasswd; // Assuming this is your password hashing utility
 
-import java.sql.SQLException;
-import java.sql.Timestamp;
+import java.sql.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -156,4 +155,36 @@ public class UserService {
                 profilePicture, bio, createdAt, lastLogin, isActive,
                 location, rating != null ? rating : 0.0, price != null ? price : 0.0);
     }
+
+
+    public void updateUserLocation(int id, String locationCoordinates) {
+    }
+
+    public List<User> getAllUsers() {
+        List<User> users = new ArrayList<>();
+        String query = """
+        SELECT id, username, email, password, user_type, phone_number, address, 
+               profile_picture, bio, is_active, location, rating, price
+        FROM users 
+        WHERE is_active = true
+        ORDER BY username
+        """;
+
+        try (Connection connection = Database.connect();
+             PreparedStatement statement = connection.prepareStatement(query);
+             ResultSet resultSet = statement.executeQuery()) {
+
+            while (resultSet.next()) {
+                User user = mapResultSetToUser(resultSet);
+                users.add(user);
+            }
+
+        } catch (SQLException e) {
+            System.err.println("Database error while fetching all users: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        return users;
+    }
+
 }

@@ -51,11 +51,11 @@ public class registerController implements Initializable {
 
             // Si la liste est vide, ajouter des valeurs par défaut
             if (userTypes.isEmpty()) {
-                accountSelectorChoice.getItems().addAll("parent", "babysitter", "admin");
+                accountSelectorChoice.getItems().addAll("parent", "babysitter");
             }
         } catch (Exception e) {
             // En cas d'erreur, utiliser des valeurs par défaut
-            accountSelectorChoice.getItems().addAll("parent", "babysitter", "admin");
+            accountSelectorChoice.getItems().addAll("parent", "babysitter");
             System.err.println("Failed to load user types: " + e.getMessage());
         }
 

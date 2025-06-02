@@ -1,11 +1,12 @@
 package com.example.app.Controllers.Email;
 
-import com.example.app.Controllers.Contact.Contact; // Import the Contact controller
+import com.example.app.Controllers.Contact.Contact;
 import com.example.app.Models.Message;
 import com.example.app.Models.User;
 import com.example.app.Services.MessageService;
-import com.example.app.Services.SessionManager; // Import SessionManager
+import com.example.app.Services.SessionManager;
 
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -13,21 +14,19 @@ import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.ListCell;
-import javafx.scene.control.ListView;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.StackPane; // Assuming you use StackPane for view switching
+import javafx.scene.control.*;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.stage.Window;
 
 import java.io.IOException;
 import java.net.URL;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Objects;
 import java.util.ResourceBundle;
+import java.util.stream.Collectors;
 
 public class EmailController implements Initializable {
 
@@ -35,65 +34,89 @@ public class EmailController implements Initializable {
     @FXML private Button menuBtn;
     @FXML private Button writeBtn;
     @FXML private Button inboxBtn;
-    @FXML private Button messageBtn; // This will show all messages (sent/received)
+    @FXML private Button messageBtn;
     @FXML private Button favoriteBtn;
+    @FXML private Button archivedBtn;
     @FXML private Button homeBtn;
     @FXML private Button settingBtn;
 
-    @FXML private StackPane contentStackPane; // Assuming this is your main content area
-    @FXML private VBox messageListView; // The VBox containing the ListView
-    @FXML private VBox composeView;     // The VBox for composing messages (e.g., writeToSomeone.fxml content)
-    @FXML private VBox messageDetailView; // The VBox for message details (messageDetail.fxml content)
+    @FXML private StackPane contentStackPane;
+    @FXML private VBox messageListViewContainer;
+    @FXML private VBox messageDetailViewContainer;
 
     @FXML private ListView<Message> emailListView;
-    @FXML private Button backToListBtn; // Button visible in detail view to go back to list
-    @FXML private Button searchBtn; // Assuming you have a search button
+    @FXML private Button backToListBtn;
+    @FXML private Button searchBtn;
+    @FXML private TextField searchInput;
 
     private MessageService messageService;
-    private User currentUser; // The currently logged-in user
+    private User currentUser;
+    private String currentViewType = "Inbox";
+    private boolean menuVisible = true;
+    private List<Message> currentMessages;
+
+    public EmailController() {
+        // Default constructor
+    }
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        // Initialize services and retrieve the current user
-        messageService = new MessageService("jdbc:postgresql://localhost:5432/babysitting", "Aymane", "RACHIDAx@436550");
+        messageService = new MessageService();
         currentUser = SessionManager.getCurrentUser();
 
         if (currentUser == null) {
             showAlert(Alert.AlertType.ERROR, "Session Error", "No user logged in. Please log in first.");
-            // Consider redirecting to login or disabling features
             return;
         }
 
-        configureMenuButtons();
-        setupEmailListView(); // Configure how messages are displayed in the list
+        setupEmailListView();
+        setupButtonActions();
+        initializeView();
 
-        // Set up action handlers
-        menuBtn.setOnAction(e -> toggleMenu());
-        writeBtn.setOnAction(this::openWriteToSomeone);
-        inboxBtn.setOnAction(this::openInbox);
-        messageBtn.setOnAction(this::openAllMessages); // Renamed for clarity to show all messages
-        favoriteBtn.setOnAction(this::openFavorite);
-        homeBtn.setOnAction(this::openClientSide); // Assuming this navigates to another part of the app
-        settingBtn.setOnAction(this::openSettings); // Assuming this navigates to another part of the app
-        backToListBtn.setOnAction(this::showMessageList); // Now correctly switches StackPane views
-        searchBtn.setOnAction(this::handleSearch); // Assuming this triggers a search logic
-
-        // Initialize view states (show message list by default)
-        composeView.setVisible(false);
-        messageDetailView.setVisible(false);
-        messageListView.setVisible(true);
-
-        // Load initial messages (e.g., inbox by default)
+        // Load initial messages (inbox by default)
         openInbox(null);
     }
 
-    private void configureMenuButtons() {
+    private void initializeView() {
+        // Initially hide detail view, show message list
+        if (messageDetailViewContainer != null) {
+            messageDetailViewContainer.setVisible(false);
+            messageDetailViewContainer.setManaged(false);
+        }
+
+        if (messageListViewContainer != null) {
+            messageListViewContainer.setVisible(true);
+            messageListViewContainer.setManaged(true);
+        }
+
+        // Set initial button states
+        updateButtonStates();
     }
 
-    /**
-     * Configures the appearance and behavior of items in the message list view.
-     */
+    private void setupButtonActions() {
+        // Navigation buttons
+        if (menuBtn != null) menuBtn.setOnAction(this::toggleMenu);
+        if (writeBtn != null) writeBtn.setOnAction(this::openWriteToSomeone);
+        if (inboxBtn != null) inboxBtn.setOnAction(this::openInbox);
+        if (messageBtn != null) messageBtn.setOnAction(this::openAllMessages);
+        if (favoriteBtn != null) favoriteBtn.setOnAction(this::openFavorite);
+        if (archivedBtn != null) archivedBtn.setOnAction(this::openArchived);
+        if (homeBtn != null) homeBtn.setOnAction(this::openClientSideEnhanced);
+        if (settingBtn != null) settingBtn.setOnAction(this::openSettings);
+
+        // Action buttons
+        if (backToListBtn != null) backToListBtn.setOnAction(this::showMessageList);
+        if (searchBtn != null) searchBtn.setOnAction(this::handleSearch);
+
+        // Search input enter key support
+        if (searchInput != null) {
+            searchInput.setOnAction(this::handleSearch);
+        }
+    }
+
     private void setupEmailListView() {
+        if (emailListView == null) return;
+
         emailListView.setCellFactory(lv -> new ListCell<Message>() {
             @Override
             protected void updateItem(Message message, boolean empty) {
@@ -101,247 +124,539 @@ public class EmailController implements Initializable {
                 if (empty || message == null) {
                     setText(null);
                     setGraphic(null);
-                    setStyle(null); // Clear previous styles
+                    setStyle(null);
                 } else {
-                    String displayParticipant;
-                    String subjectPrefix = "";
-                    boolean isSentByCurrentUser = (message.getSenderId() == currentUser.getId() &&
-                            message.getSenderType().equals(currentUser.getUserType()));
-
-                    if (isSentByCurrentUser) {
-                        displayParticipant = "To: " + messageService.getUserFullName(message.getReceiverId(), message.getReceiverType());
-                        subjectPrefix = "Sent: ";
-                        // Apply specific style for sent messages
-                        setStyle("-fx-font-weight: bold; -fx-text-fill: #3498db;"); // Blue for sent
-                    } else { // Current user is the receiver
-                        displayParticipant = "From: " + messageService.getUserFullName(message.getSenderId(), message.getSenderType());
-                        // Add "New: " prefix if unread and received by current user
-                        subjectPrefix = message.isRead() ? "" : "New: ";
-                        setStyle(message.isRead() ? "-fx-font-weight: normal; -fx-text-fill: black;" : "-fx-font-weight: bold; -fx-text-fill: green;"); // Green for unread
-                    }
-
-                    // Display subject, participant, and formatted timestamp
-                    setText(subjectPrefix + message.getSubject() + " - " + displayParticipant +
-                            " (" + message.getTimestamp().format(DateTimeFormatter.ofPattern("MMM d, HH:mm")) + ")");
+                    updateMessageCell(message);
                 }
             }
+
+            private void updateMessageCell(Message message) {
+                String displayParticipant;
+                String subjectPrefix = "";
+                boolean isSentByCurrentUser = (message.getSenderId() == currentUser.getId() &&
+                        message.getSenderType().equals(currentUser.getUserType()));
+
+                if (isSentByCurrentUser) {
+                    displayParticipant = "To: " + messageService.getUserFullName(message.getReceiverId(), message.getReceiverType());
+                    subjectPrefix = "Sent: ";
+                    setStyle("-fx-font-weight: bold; -fx-text-fill: #3498db;");
+                } else {
+                    displayParticipant = "From: " + messageService.getUserFullName(message.getSenderId(), message.getSenderType());
+                    subjectPrefix = message.isRead() ? "" : "New: ";
+                    setStyle(message.isRead() ? "-fx-font-weight: normal; -fx-text-fill: black;" : "-fx-font-weight: bold; -fx-text-fill: green;");
+                }
+
+                if (message.isArchived()) {
+                    subjectPrefix = "[Archived] " + subjectPrefix;
+                    setStyle(getStyle() + "; -fx-text-fill: gray;");
+                }
+
+                if (message.isStarred()) {
+                    subjectPrefix = "★ " + subjectPrefix;
+                }
+
+                setText(subjectPrefix + message.getSubject() + " - " + displayParticipant +
+                        " (" + message.getTimestamp().format(DateTimeFormatter.ofPattern("MMM d, HH:mm")) + ")");
+            }
         });
 
-        // Add selection listener to show message detail when an item is selected
         emailListView.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue != null) {
-                showMessageDetail(newValue); // Pass the selected Message object
+                showMessageDetail(newValue);
             }
         });
     }
 
-    /**
-     * Toggles the visibility of the side menu bar.
-     */
-    private void toggleMenu() {
-        menuBar.setVisible(!menuBar.isVisible());
-        menuBar.setManaged(menuBar.isVisible());
+    private void updateButtonStates() {
+        // Reset all button styles first
+        resetButtonStyles();
+
+        // Highlight current active view
+        Button activeButton = null;
+        switch (currentViewType) {
+            case "Inbox":
+                activeButton = inboxBtn;
+                break;
+            case "AllMessages":
+                activeButton = messageBtn;
+                break;
+            case "Favorites":
+                activeButton = favoriteBtn;
+                break;
+            case "Archived":
+                activeButton = archivedBtn;
+                break;
+        }
+
+        if (activeButton != null) {
+            activeButton.getStyleClass().add("active-btn");
+        }
     }
 
-    /**
-     * Displays the message list view and hides other views.
-     * @param event The ActionEvent (can be null if called programmatically).
-     */
+    private void resetButtonStyles() {
+        Button[] navButtons = {inboxBtn, messageBtn, favoriteBtn, archivedBtn};
+        for (Button btn : navButtons) {
+            if (btn != null) {
+                btn.getStyleClass().remove("active-btn");
+            }
+        }
+    }
+
+    // ===========================================
+    // NAVIGATION BUTTON HANDLERS
+    // ===========================================
+
     @FXML
-    private void showMessageList(ActionEvent event) {
-        composeView.setVisible(false);
-        composeView.setManaged(false); // No longer managed when hidden
-        messageDetailView.setVisible(false);
-        messageDetailView.setManaged(false); // No longer managed when hidden
-        messageListView.setVisible(true);
-        messageListView.setManaged(true); // Managed when visible
+    private void toggleMenu(ActionEvent event) {
+        menuVisible = !menuVisible;
+        if (menuBar != null) {
+            menuBar.setVisible(menuVisible);
+            menuBar.setManaged(menuVisible);
+        }
+        System.out.println("Menu toggled: " + (menuVisible ? "Visible" : "Hidden"));
     }
 
-    /**
-     * Opens the "Write to Someone" message composition window.
-     * @param event The ActionEvent.
-     */
     @FXML
     private void openWriteToSomeone(ActionEvent event) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/Fxml/Messages/writeToSomeone.fxml"));
+            URL fxmlUrl = getClass().getResource("/Fxml/Messages/writeToSomeone.fxml");
+            if (fxmlUrl == null) {
+                showAlert(Alert.AlertType.ERROR, "Error", "Could not find writeToSomeone.fxml file.");
+                return;
+            }
+
+            FXMLLoader loader = new FXMLLoader(fxmlUrl);
             Parent root = loader.load();
 
             Contact contactController = loader.getController();
-            // Set a callback for the compose controller to refresh the list after a message is sent
-            contactController.setComposeCallback(() -> {
-                showAlert(Alert.AlertType.INFORMATION, "Success", "Message sent successfully!");
-                openAllMessages(null); // Refresh all messages in the list
-                showMessageList(null); // Return to list view
-            });
+            if (contactController != null) {
+                contactController.setComposeCallback(() -> {
+                    Platform.runLater(() -> {
+                        showAlert(Alert.AlertType.INFORMATION, "Success", "Message sent successfully!");
+                        refreshCurrentMessageList();
+                        showMessageList(null);
+                    });
+                });
+            }
 
             Stage stage = new Stage();
             stage.setTitle("Compose Message");
             stage.setScene(new Scene(root));
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.initOwner(getCurrentStage());
             stage.show();
+
+            System.out.println("Opening compose message window...");
 
         } catch (IOException e) {
             e.printStackTrace();
-            showAlert(Alert.AlertType.ERROR, "Error", "Could not open compose window.");
+            showAlert(Alert.AlertType.ERROR, "Error", "Could not open compose window: " + e.getMessage());
         }
     }
 
-    /**
-     * Loads and displays inbox messages for the current user.
-     * @param event The ActionEvent.
-     */
     @FXML
     private void openInbox(ActionEvent event) {
-        showMessageList(event); // Ensure list view is visible
+        currentViewType = "Inbox";
+        showMessageList(event);
+
         if (currentUser != null) {
-            List<Message> inboxMessages = messageService.getInboxMessagesForUser(currentUser.getId());
-            emailListView.setItems(FXCollections.observableArrayList(inboxMessages));
-            System.out.println("Opening Inbox...");
+            try {
+                List<Message> inboxMessages = messageService.getInboxMessagesForUser(currentUser.getId());
+                currentMessages = inboxMessages;
+                if (emailListView != null) {
+                    emailListView.setItems(FXCollections.observableArrayList(inboxMessages));
+                }
+                updateButtonStates();
+                System.out.println("Loaded " + inboxMessages.size() + " inbox messages");
+            } catch (Exception e) {
+                showAlert(Alert.AlertType.ERROR, "Error", "Failed to load inbox messages: " + e.getMessage());
+            }
         } else {
             showAlert(Alert.AlertType.ERROR, "User Error", "Current user not set.");
         }
     }
 
-    /**
-     * Loads and displays all messages (sent and received) for the current user.
-     * @param event The ActionEvent.
-     */
     @FXML
     private void openAllMessages(ActionEvent event) {
-        showMessageList(event); // Ensure list view is visible
+        currentViewType = "AllMessages";
+        showMessageList(event);
+
         if (currentUser != null) {
-            List<Message> allMessages = messageService.getAllMessagesForUser(currentUser.getId());
-            emailListView.setItems(FXCollections.observableArrayList(allMessages));
-            System.out.println("Opening All Messages...");
+            try {
+                List<Message> allMessages = messageService.getAllMessagesForUser(currentUser.getId());
+                currentMessages = allMessages;
+                if (emailListView != null) {
+                    emailListView.setItems(FXCollections.observableArrayList(allMessages));
+                }
+                updateButtonStates();
+                System.out.println("Loaded " + allMessages.size() + " messages (excluding archived)");
+            } catch (Exception e) {
+                showAlert(Alert.AlertType.ERROR, "Error", "Failed to load messages: " + e.getMessage());
+            }
         } else {
             showAlert(Alert.AlertType.ERROR, "User Error", "Current user not set.");
         }
     }
 
-    /**
-     * Loads and displays starred messages for the current user.
-     * @param event The ActionEvent.
-     */
     @FXML
     private void openFavorite(ActionEvent event) {
-        showMessageList(event); // Ensure list view is visible
+        currentViewType = "Favorites";
+        showMessageList(event);
+
         if (currentUser != null) {
-            List<Message> starredMessages = messageService.getStarredMessagesForUser(currentUser.getId());
-            emailListView.setItems(FXCollections.observableArrayList(starredMessages));
-            System.out.println("Opening Favorites...");
+            try {
+                List<Message> starredMessages = messageService.getStarredMessagesForUser(currentUser.getId());
+                currentMessages = starredMessages;
+                if (emailListView != null) {
+                    emailListView.setItems(FXCollections.observableArrayList(starredMessages));
+                }
+                updateButtonStates();
+                System.out.println("Loaded " + starredMessages.size() + " favorite messages");
+            } catch (Exception e) {
+                showAlert(Alert.AlertType.ERROR, "Error", "Failed to load favorite messages: " + e.getMessage());
+            }
         } else {
             showAlert(Alert.AlertType.ERROR, "User Error", "Current user not set.");
         }
     }
 
-    /**
-     * Handles the search action (placeholder).
-     * @param event The ActionEvent.
-     */
     @FXML
-    private void handleSearch(ActionEvent event) {
-        showAlert(Alert.AlertType.INFORMATION, "Search", "Search functionality not yet implemented.");
+    private void openArchived(ActionEvent event) {
+        currentViewType = "Archived";
+        showMessageList(event);
+
+        if (currentUser != null) {
+            try {
+                List<Message> archivedMessages = messageService.getArchivedMessagesForUser(currentUser.getId());
+                currentMessages = archivedMessages;
+                if (emailListView != null) {
+                    emailListView.setItems(FXCollections.observableArrayList(archivedMessages));
+                }
+                updateButtonStates();
+                System.out.println("Loaded " + archivedMessages.size() + " archived messages");
+            } catch (Exception e) {
+                showAlert(Alert.AlertType.ERROR, "Error", "Failed to load archived messages: " + e.getMessage());
+            }
+        } else {
+            showAlert(Alert.AlertType.ERROR, "User Error", "Current user not set.");
+        }
+    }
+    private String getDashboardPathForUserRole(String userRole) {
+        switch (userRole.toLowerCase()) {
+            case "admin":
+                return "/Fxml/Admin/AdminDashboard.fxml";
+            case "babysitter":
+                return "/Fxml/Babysitters/babysitters.fxml";
+            case "parent":
+            case "client":
+                return "/Fxml/Babysitters/ClientSide.fxml";
+            default:
+                return "/Fxml/Client/client.fxml";
+        }
+    }
+    private String getWindowTitleForUserRole(String userRole, String userName) {
+        String roleDisplayName;
+        switch (userRole.toLowerCase()) {
+            case "admin":
+                roleDisplayName = "Admin Dashboard";
+                break;
+            case "babysitter":
+                roleDisplayName = "Babysitter Dashboard";
+                break;
+            case "parent":
+            case "client":
+                roleDisplayName = "Client Dashboard";
+                break;
+            default:
+                roleDisplayName = "Dashboard";
+        }
+        return roleDisplayName + " - " + userName;
+    }
+    @FXML
+    private void openClientSideEnhanced(ActionEvent event) {
+        try {
+            User currentUser = SessionManager.getCurrentUser();
+
+            if (currentUser == null) {
+                showAlert(Alert.AlertType.ERROR, "Session Error", "No user logged in. Please log in again.");
+                return;
+            }
+
+            String userRole = currentUser.getUserType();
+            String fxmlPath = getDashboardPathForUserRole(userRole);
+            String windowTitle = getWindowTitleForUserRole(userRole, currentUser.getName());
+
+            System.out.println("Navigating back to dashboard for user: " + currentUser.getName() +
+                    " (" + userRole + ")");
+
+            URL fxmlUrl = getClass().getResource(fxmlPath);
+            if (fxmlUrl == null) {
+                showAlert(Alert.AlertType.WARNING, "Navigation",
+                        "Dashboard not found. Feature may not be implemented yet.");
+                return;
+            }
+
+            FXMLLoader loader = new FXMLLoader(fxmlUrl);
+            Parent root = loader.load();
+
+            Stage currentStage = getCurrentStage();
+            if (currentStage != null) {
+                currentStage.getScene().setRoot(root);
+                currentStage.setTitle(windowTitle);
+                currentStage.centerOnScreen();
+            }
+
+            System.out.println("Successfully navigated to: " + windowTitle);
+
+        } catch (IOException e) {
+            showAlert(Alert.AlertType.ERROR, "Navigation Error",
+                    "Could not load dashboard: " + e.getMessage());
+            e.printStackTrace();
+        } catch (Exception e) {
+            showAlert(Alert.AlertType.ERROR, "Unexpected Error",
+                    "Navigation failed: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
-    /**
-     * Placeholder for navigating to client side/dashboard.
-     * @param event The ActionEvent.
-     */
-    @FXML
-    private void openClientSide(ActionEvent event) {
-        showAlert(Alert.AlertType.INFORMATION, "Navigation", "Navigating to Client Dashboard.");
-        // Implement actual navigation logic here
-    }
-
-    /**
-     * Placeholder for navigating to settings.
-     * @param event The ActionEvent.
-     */
     @FXML
     private void openSettings(ActionEvent event) {
-        showAlert(Alert.AlertType.INFORMATION, "Navigation", "Navigating to Settings.");
-        // Implement actual navigation logic here
+        try {
+            URL fxmlUrl = getClass().getResource("/Fxml/Settings/Settings.fxml");
+            if (fxmlUrl == null) {
+                showAlert(Alert.AlertType.WARNING, "Settings", "Settings window not found. Feature not implemented yet.");
+                return;
+            }
+
+            FXMLLoader loader = new FXMLLoader(fxmlUrl);
+            Parent root = loader.load();
+
+            Stage stage = new Stage();
+            stage.setTitle("Settings");
+            stage.setScene(new Scene(root));
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.initOwner(getCurrentStage());
+            stage.show();
+
+            System.out.println("Opening Settings window...");
+
+        } catch (IOException e) {
+            showAlert(Alert.AlertType.WARNING, "Settings", "Could not open settings: " + e.getMessage());
+        }
     }
 
-    /**
-     * Displays the detailed view of a selected message.
-     * This method is called from the ListView's selection listener.
-     * @param selectedMessage The Message object to display.
-     */
-    public void showMessageDetail(Message selectedMessage) {
-        composeView.setVisible(false);
-        composeView.setManaged(false);
-        messageListView.setVisible(false);
-        messageListView.setManaged(false);
-        messageDetailView.setVisible(true); // Ensure this VBox is visible
-        messageDetailView.setManaged(true);
+    // ===========================================
+    // ACTION BUTTON HANDLERS
+    // ===========================================
+
+    @FXML
+    private void showMessageList(ActionEvent event) {
+        if (messageDetailViewContainer != null) {
+            messageDetailViewContainer.setVisible(false);
+            messageDetailViewContainer.setManaged(false);
+        }
+
+        if (messageListViewContainer != null) {
+            messageListViewContainer.setVisible(true);
+            messageListViewContainer.setManaged(true);
+        }
+
+        // Clear selection when returning to list
+        if (emailListView != null) {
+            emailListView.getSelectionModel().clearSelection();
+        }
+
+        System.out.println("Showing message list view");
+    }
+
+    @FXML
+    private void handleSearch(ActionEvent event) {
+        if (searchInput == null || currentMessages == null) {
+            showAlert(Alert.AlertType.WARNING, "Search", "Search not available at this time.");
+            return;
+        }
+
+        String searchTerm = searchInput.getText().trim();
+        if (searchTerm.isEmpty()) {
+            // If search is empty, show all current messages
+            if (emailListView != null) {
+                emailListView.setItems(FXCollections.observableArrayList(currentMessages));
+            }
+            return;
+        }
 
         try {
-            // Clear any old content from messageDetailView first
-            messageDetailView.getChildren().clear();
+            // Filter messages based on search term
+            List<Message> filteredMessages = currentMessages.stream()
+                    .filter(message ->
+                            message.getSubject().toLowerCase().contains(searchTerm.toLowerCase()) ||
+                                    message.getContent().toLowerCase().contains(searchTerm.toLowerCase()) ||
+                                    messageService.getUserFullName(message.getSenderId(), message.getSenderType())
+                                            .toLowerCase().contains(searchTerm.toLowerCase()) ||
+                                    messageService.getUserFullName(message.getReceiverId(), message.getReceiverType())
+                                            .toLowerCase().contains(searchTerm.toLowerCase())
+                    )
+                    .collect(Collectors.toList());
 
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/Fxml/Email/messageDetail.fxml"));
-            VBox detailViewContent = loader.load(); // Load the content of MessageDetail.fxml
+            if (emailListView != null) {
+                emailListView.setItems(FXCollections.observableArrayList(filteredMessages));
+            }
+
+            System.out.println("Search for '" + searchTerm + "' found " + filteredMessages.size() + " results");
+
+            if (filteredMessages.isEmpty()) {
+                showAlert(Alert.AlertType.INFORMATION, "Search Results",
+                        "No messages found matching '" + searchTerm + "'");
+            }
+
+        } catch (Exception e) {
+            showAlert(Alert.AlertType.ERROR, "Search Error", "Error performing search: " + e.getMessage());
+        }
+    }
+
+    // ===========================================
+    // UTILITY METHODS
+    // ===========================================
+
+    private void refreshCurrentMessageList() {
+        switch (currentViewType) {
+            case "Inbox":
+                openInbox(null);
+                break;
+            case "AllMessages":
+                openAllMessages(null);
+                break;
+            case "Favorites":
+                openFavorite(null);
+                break;
+            case "Archived":
+                openArchived(null);
+                break;
+            default:
+                openInbox(null);
+                break;
+        }
+    }
+
+    private Stage getCurrentStage() {
+        if (menuBtn != null && menuBtn.getScene() != null) {
+            Window window = menuBtn.getScene().getWindow();
+            if (window instanceof Stage) {
+                return (Stage) window;
+            }
+        }
+        return null;
+    }
+
+    public void showMessageDetail(Message selectedMessage) {
+        if (selectedMessage == null) return;
+
+        if (messageListViewContainer != null) {
+            messageListViewContainer.setVisible(false);
+            messageListViewContainer.setManaged(false);
+        }
+
+        if (messageDetailViewContainer != null) {
+            messageDetailViewContainer.setVisible(true);
+            messageDetailViewContainer.setManaged(true);
+            messageDetailViewContainer.getChildren().clear();
+        }
+
+        try {
+            URL fxmlUrl = getClass().getResource("/Fxml/Messages/MessageDetail.fxml");
+            if (fxmlUrl == null) {
+                showAlert(Alert.AlertType.ERROR, "Error", "Could not find MessageDetail.fxml file.");
+                return;
+            }
+
+            FXMLLoader loader = new FXMLLoader(fxmlUrl);
+            VBox detailViewContent = loader.load();
             MessageDetail messageDetailController = loader.getController();
 
-            // Pass the selected message and current user to the MessageDetail controller
-            messageDetailController.setMessage(selectedMessage);
-            messageDetailController.setCurrentUser(currentUser); // Pass the current user
+            if (messageDetailController != null) {
+                messageDetailController.setMessage(selectedMessage);
+                messageDetailController.setCurrentUser(currentUser);
 
-            // Set up the callback to handle actions from MessageDetail
-            messageDetailController.setCallback(new MessageDetail.MessageDetailCallback() {
-                @Override
-                public void onBackToList() {
-                    showMessageList(null); // Switch back to message list
-                    // Re-load messages to ensure the list is fresh (e.g., if a message was deleted or read status changed)
-                    openAllMessages(null); // Or openInbox if that's the default
-                }
+                messageDetailController.setCallback(new MessageDetail.MessageDetailCallback() {
+                    @Override
+                    public void onBackToList() {
+                        showMessageList(null);
+                        refreshCurrentMessageList();
+                    }
 
-                @Override
-                public void onMessageDeleted(int messageId) {
-                    // Remove the deleted message from the ListView directly
-                    emailListView.getItems().removeIf(m -> m.getId() == messageId);
-                    showMessageList(null); // Switch back to message list
-                    showAlert(Alert.AlertType.INFORMATION, "Success", "Message deleted successfully.");
-                }
+                    @Override
+                    public void onMessageDeleted(int messageId) {
+                        if (emailListView != null) {
+                            emailListView.getItems().removeIf(m -> m.getId() == messageId);
+                        }
+                        showMessageList(null);
+                        refreshCurrentMessageList();
+                        showAlert(Alert.AlertType.INFORMATION, "Success", "Message deleted successfully.");
+                    }
 
-                @Override
-                public void onMessageSent() {
-                    showMessageList(null); // Switch back to message list
-                    openAllMessages(null); // Refresh all messages after sending a reply/forward
-                    showAlert(Alert.AlertType.INFORMATION, "Success", "Message sent successfully!");
-                }
-            });
+                    @Override
+                    public void onMessageSent() {
+                        showMessageList(null);
+                        refreshCurrentMessageList();
+                        showAlert(Alert.AlertType.INFORMATION, "Success", "Message sent successfully!");
+                    }
 
-            // Set the loaded FXML content into the messageDetailView VBox
-            messageDetailView.getChildren().setAll(detailViewContent);
+                    @Override
+                    public void onMessageArchived(int messageId, boolean isArchived) {
+                        if (emailListView != null) {
+                            Message updatedMessage = emailListView.getItems().stream()
+                                    .filter(m -> m.getId() == messageId)
+                                    .findFirst()
+                                    .orElse(null);
+                            if (updatedMessage != null) {
+                                updatedMessage.setArchived(isArchived);
+                            }
+                        }
+                        showMessageList(null);
+                        refreshCurrentMessageList();
+                        showAlert(Alert.AlertType.INFORMATION, "Success",
+                                "Message " + (isArchived ? "archived" : "unarchived") + " successfully.");
+                    }
+                });
+            }
 
-            // Mark message as read if it's a received message for the current user and not already read
+            if (messageDetailViewContainer != null) {
+                messageDetailViewContainer.getChildren().setAll(detailViewContent);
+            }
+
+            // Mark as read if current user is receiver and message is unread
             if (selectedMessage.getReceiverId() == currentUser.getId() && !selectedMessage.isRead()) {
-                boolean updated = messageService.updateMessageReadStatus(selectedMessage.getId(), true);
-                if (updated) {
-                    selectedMessage.setRead(true); // Update the model in memory
-                    emailListView.refresh(); // Refresh the item in the list view to update its style (e.g., remove "New:")
+                try {
+                    boolean updated = messageService.updateMessageReadStatus(selectedMessage.getId(), true);
+                    if (updated) {
+                        selectedMessage.setRead(true);
+                        if (emailListView != null) {
+                            emailListView.refresh();
+                        }
+                    }
+                } catch (Exception e) {
+                    System.err.println("Failed to update read status: " + e.getMessage());
                 }
             }
 
         } catch (IOException e) {
             e.printStackTrace();
-            showAlert(Alert.AlertType.ERROR, "Error", "Could not load message details.");
+            showAlert(Alert.AlertType.ERROR, "Error", "Could not load message details: " + e.getMessage());
         }
     }
 
-    /**
-     * Shows an alert dialog.
-     */
     private void showAlert(Alert.AlertType alertType, String title, String content) {
         Alert alert = new Alert(alertType);
         alert.setTitle(title);
         alert.setHeaderText(null);
         alert.setContentText(content);
+        alert.initOwner(getCurrentStage());
         alert.showAndWait();
     }
 
+    // Legacy method for backward compatibility
+    @FXML
     public void openCloseMenu(ActionEvent actionEvent) {
+        toggleMenu(actionEvent);
     }
 }

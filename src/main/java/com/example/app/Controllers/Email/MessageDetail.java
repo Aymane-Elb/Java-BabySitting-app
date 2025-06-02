@@ -1,11 +1,10 @@
 package com.example.app.Controllers.Email;
 
-import com.example.app.Controllers.Contact.Contact; // For opening reply/forward window
+import com.example.app.Controllers.Contact.Contact;
 import com.example.app.Models.Message;
 import com.example.app.Models.User;
 import com.example.app.Services.MessageService;
-import com.example.app.Services.SessionManager; // For getting current user for new messages
-import com.example.app.Services.UserService; // To get sender/receiver names
+import com.example.app.Services.UserService;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -19,11 +18,10 @@ import javafx.stage.Stage;
 import java.io.IOException;
 import java.net.URL;
 import java.time.format.DateTimeFormatter;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.ResourceBundle;
 
-public class MessageDetail implements Initializable { // Renamed from MessageDetailController for brevity
+public class MessageDetail implements Initializable {
 
     @FXML private Label fromLabel;
     @FXML private Label toLabel;
@@ -35,29 +33,36 @@ public class MessageDetail implements Initializable { // Renamed from MessageDet
     @FXML private Button forwardButton;
     @FXML private Button deleteButton;
     @FXML private Button starButton;
-    @FXML private Button archiveButton; // Added archive button
+    @FXML private Button archiveButton;
 
     private Message message;
     private User currentUser;
     private MessageService messageService;
-    private UserService userService; // To resolve user names
-    private MessageDetailCallback callback; // Callback to EmailController
+    private UserService userService;
+    private MessageDetailCallback callback;
 
-    // Interface for callback to the main EmailController
+    /**
+     * Interface for callback to the main EmailController.
+     */
     public interface MessageDetailCallback {
         void onBackToList();
         void onMessageDeleted(int messageId);
-        void onMessageSent(); // For replies/forwards
+        void onMessageSent();
+        void onMessageArchived(int messageId, boolean isArchived);
     }
 
+    /**
+     * Sets the callback interface for communication with the parent controller.
+     * @param callback The implementation of MessageDetailCallback.
+     */
     public void setCallback(MessageDetailCallback callback) {
         this.callback = callback;
     }
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        messageService = new MessageService(); // Initialize with default credentials
-        userService = new UserService(); // Initialize UserService
+        messageService = new MessageService();
+        userService = new UserService();
         setupButtonActions();
     }
 
@@ -80,129 +85,170 @@ public class MessageDetail implements Initializable { // Renamed from MessageDet
         this.currentUser = currentUser;
     }
 
+    /**
+     * Sets up action listeners for all UI buttons.
+     */
     private void setupButtonActions() {
-        backButton.setOnAction(event -> {
-            if (callback != null) callback.onBackToList();
-        });
-        replyButton.setOnAction(this::handleReply);
-        forwardButton.setOnAction(this::handleForward);
-        deleteButton.setOnAction(this::handleDelete);
-        starButton.setOnAction(this::handleStarToggle);
-        archiveButton.setOnAction(this::handleArchiveToggle); // Action for archive button
+        if (backButton != null) {
+            backButton.setOnAction(event -> {
+                if (callback != null) callback.onBackToList();
+            });
+        }
+
+        if (replyButton != null) {
+            replyButton.setOnAction(this::handleReply);
+        }
+
+        if (forwardButton != null) {
+            forwardButton.setOnAction(this::handleForward);
+        }
+
+        if (deleteButton != null) {
+            deleteButton.setOnAction(this::handleDelete);
+        }
+
+        if (starButton != null) {
+            starButton.setOnAction(this::handleStarToggle);
+        }
+
+        if (archiveButton != null) {
+            archiveButton.setOnAction(this::handleArchiveToggle);
+        }
     }
 
+    /**
+     * Updates the UI elements with the details of the currently set message.
+     * Also handles marking the message as read if applicable.
+     */
     private void updateUI() {
         if (message != null && currentUser != null) {
             String fromName = getUserDisplayName(message.getSenderId());
             String toName = getUserDisplayName(message.getReceiverId());
 
-            fromLabel.setText("From: " + fromName);
-            toLabel.setText("To: " + toName);
-            subjectLabel.setText("Subject: " + message.getSubject());
-            dateLabel.setText("Date: " + message.getTimestamp().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")));
-            contentTextArea.setText(message.getContent());
+            if (fromLabel != null) fromLabel.setText("From: " + fromName);
+            if (toLabel != null) toLabel.setText("To: " + toName);
+            if (subjectLabel != null) subjectLabel.setText(message.getSubject());
+            if (dateLabel != null) dateLabel.setText("Date: " + message.getTimestamp().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")));
+            if (contentTextArea != null) {
+                contentTextArea.setText(message.getContent());
+                contentTextArea.setEditable(false); // Make sure it's read-only
+            }
 
-            // Update star/archive button text/icon based on current state
             updateStarButtonAppearance();
             updateArchiveButtonAppearance();
 
             // Mark as read if current user is receiver and message is unread
             if (message.getReceiverId() == currentUser.getId() && !message.isRead()) {
                 if (messageService.updateMessageReadStatus(message.getId(), true)) {
-                    message.setRead(true); // Update local model
-                    // No need to refresh ListView here, EmailController's callback handles it
+                    message.setRead(true);
                 }
             }
         } else {
             // Clear UI if message or currentUser is null
-            fromLabel.setText("From:");
-            toLabel.setText("To:");
-            subjectLabel.setText("Subject:");
-            dateLabel.setText("Date:");
-            contentTextArea.setText("");
+            if (fromLabel != null) fromLabel.setText("From:");
+            if (toLabel != null) toLabel.setText("To:");
+            if (subjectLabel != null) subjectLabel.setText("Subject:");
+            if (dateLabel != null) dateLabel.setText("Date:");
+            if (contentTextArea != null) contentTextArea.setText("");
         }
     }
 
     /**
-     * Gets a user's name based on their ID using UserService.
+     * Retrieves a user's display name based on their ID using UserService.
      * @param userId The ID of the user.
-     * @return The user's name or "Unknown User".
+     * @return The user's name or "Unknown User (ID: [id])" if not found.
      */
     private String getUserDisplayName(int userId) {
-        Optional<User> userOptional = userService.getUserById(userId);
-        return userOptional.map(User::getName).orElse("Unknown User (ID: " + userId + ")");
+        try {
+            Optional<User> userOptional = userService.getUserById(userId);
+            return userOptional.map(User::getName).orElse("Unknown User (ID: " + userId + ")");
+        } catch (Exception e) {
+            System.err.println("Error getting user display name for ID " + userId + ": " + e.getMessage());
+            return "Unknown User (ID: " + userId + ")";
+        }
     }
 
+    /**
+     * Handles the action for the reply button. Opens a compose window pre-filled for a reply.
+     * @param event The ActionEvent that triggered this method.
+     */
     private void handleReply(ActionEvent event) {
         if (message != null && currentUser != null) {
-            openComposeWindowForReply(message, currentUser); // Call the specific reply window opener
+            openComposeWindow("/Fxml/Messages/writeToSomeone.fxml", "Reply Message",
+                    loader -> {
+                        try {
+                            Contact controller = (Contact) loader.getController();
+                            controller.prepareReply(message, currentUser);
+                        } catch (Exception e) {
+                            System.err.println("Error preparing reply: " + e.getMessage());
+                        }
+                    });
         } else {
             showAlert(Alert.AlertType.ERROR, "Error", "Cannot reply: message or current user is null.");
         }
     }
 
+    /**
+     * Handles the action for the forward button. Opens a compose window pre-filled for a forward.
+     * @param event The ActionEvent that triggered this method.
+     */
     private void handleForward(ActionEvent event) {
         if (message != null && currentUser != null) {
-            openComposeWindowForForward(message, currentUser); // Call the specific forward window opener
+            openComposeWindow("/Fxml/Messages/writeToSomeone.fxml", "Forward Message",
+                    loader -> {
+                        try {
+                            Contact controller = (Contact) loader.getController();
+                            controller.prepareForward(message, currentUser);
+                        } catch (Exception e) {
+                            System.err.println("Error preparing forward: " + e.getMessage());
+                        }
+                    });
         } else {
             showAlert(Alert.AlertType.ERROR, "Error", "Cannot forward: message or current user is null.");
         }
     }
 
-    // New method for opening compose window specifically for replies
-    private void openComposeWindowForReply(Message originalMessage, User currentUser) {
+    /**
+     * Generic method to open a compose window with specified FXML and title,
+     * and apply a pre-preparation logic to its controller.
+     * @param fxmlPath The path to the FXML file for the compose window.
+     * @param title The title for the new stage.
+     * @param controllerPreparer A functional interface to prepare the Contact controller.
+     */
+    private void openComposeWindow(String fxmlPath, String title, java.util.function.Consumer<FXMLLoader> controllerPreparer) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/Fxml/Messages/writeToSomeone.fxml"));
-            Parent root = loader.load();
-            Contact contactController = loader.getController();
+            URL fxmlUrl = getClass().getResource(fxmlPath);
+            if (fxmlUrl == null) {
+                showAlert(Alert.AlertType.ERROR, "Error", "Could not find FXML file: " + fxmlPath);
+                return;
+            }
 
-            // Call the prepareReply method in Contact controller
-            contactController.prepareReply(originalMessage, currentUser);
+            FXMLLoader loader = new FXMLLoader(fxmlUrl);
+            Parent root = loader.load();
+
+            controllerPreparer.accept(loader); // Prepare the controller using the provided logic
 
             Stage stage = new Stage();
-            stage.setTitle("Reply Message");
+            stage.setTitle(title);
             stage.setScene(new Scene(root));
             stage.show();
 
-            // Set a callback for the compose controller
+            Contact contactController = (Contact) loader.getController();
             contactController.setComposeCallback(() -> {
-                stage.close(); // Close compose window
-                if (callback != null) callback.onMessageSent(); // Notify main EmailController
+                stage.close();
+                if (callback != null) callback.onMessageSent();
             });
 
         } catch (IOException e) {
             e.printStackTrace();
-            showAlert(Alert.AlertType.ERROR, "Error", "Could not open reply window: " + e.getMessage());
+            showAlert(Alert.AlertType.ERROR, "Error", "Could not open compose window: " + e.getMessage());
         }
     }
 
-    // New method for opening compose window specifically for forwards
-    private void openComposeWindowForForward(Message originalMessage, User currentUser) {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/Fxml/Messages/writeToSomeone.fxml"));
-            Parent root = loader.load();
-            Contact contactController = loader.getController();
-
-            // Call the prepareForward method in Contact controller
-            contactController.prepareForward(originalMessage, currentUser);
-
-            Stage stage = new Stage();
-            stage.setTitle("Forward Message");
-            stage.setScene(new Scene(root));
-            stage.show();
-
-            // Set a callback for the compose controller
-            contactController.setComposeCallback(() -> {
-                stage.close(); // Close compose window
-                if (callback != null) callback.onMessageSent(); // Notify main EmailController
-            });
-
-        } catch (IOException e) {
-            e.printStackTrace();
-            showAlert(Alert.AlertType.ERROR, "Error", "Could not open forward window: " + e.getMessage());
-        }
-    }
-
+    /**
+     * Handles the action for the delete button. Confirms deletion and then deletes the message.
+     * @param event The ActionEvent that triggered this method.
+     */
     private void handleDelete(ActionEvent event) {
         if (message != null) {
             Alert confirmAlert = new Alert(Alert.AlertType.CONFIRMATION, "Are you sure you want to delete this message?", ButtonType.YES, ButtonType.NO);
@@ -211,60 +257,104 @@ public class MessageDetail implements Initializable { // Renamed from MessageDet
             Optional<ButtonType> result = confirmAlert.showAndWait();
 
             if (result.isPresent() && result.get() == ButtonType.YES) {
-                if (messageService.deleteMessage(message.getId())) {
-                    if (callback != null) callback.onMessageDeleted(message.getId());
-                } else {
-                    showAlert(Alert.AlertType.ERROR, "Error", "Failed to delete message.");
+                try {
+                    if (messageService.deleteMessage(message.getId())) {
+                        if (callback != null) callback.onMessageDeleted(message.getId());
+                    } else {
+                        showAlert(Alert.AlertType.ERROR, "Error", "Failed to delete message.");
+                    }
+                } catch (Exception e) {
+                    System.err.println("Error deleting message: " + e.getMessage());
+                    showAlert(Alert.AlertType.ERROR, "Error", "Failed to delete message: " + e.getMessage());
                 }
             }
         }
     }
 
+    /**
+     * Handles toggling the starred status of the message.
+     * @param event The ActionEvent that triggered this method.
+     */
     private void handleStarToggle(ActionEvent event) {
         if (message != null) {
-            boolean newStarredStatus = !message.isStarred();
-            if (messageService.updateMessageStarredStatus(message.getId(), newStarredStatus)) {
-                message.setStarred(newStarredStatus); // Update local model
-                updateStarButtonAppearance(); // Update button UI
-                showAlert(Alert.AlertType.INFORMATION, "Success", "Message " + (newStarredStatus ? "starred" : "unstarred") + ".");
-                // Potentially, you might want to refresh the main list view here if it's currently showing favorites.
-                // This would be handled by the EmailController's callback, but only if the action directly affects the list content.
-            } else {
-                showAlert(Alert.AlertType.ERROR, "Error", "Failed to update starred status.");
+            try {
+                boolean newStarredStatus = !message.isStarred();
+                if (messageService.updateMessageStarredStatus(message.getId(), newStarredStatus)) {
+                    message.setStarred(newStarredStatus);
+                    updateStarButtonAppearance();
+                    showAlert(Alert.AlertType.INFORMATION, "Success", "Message " + (newStarredStatus ? "starred" : "unstarred") + ".");
+                } else {
+                    showAlert(Alert.AlertType.ERROR, "Error", "Failed to update starred status.");
+                }
+            } catch (Exception e) {
+                System.err.println("Error toggling star status: " + e.getMessage());
+                showAlert(Alert.AlertType.ERROR, "Error", "Failed to update starred status: " + e.getMessage());
             }
         }
     }
 
+    /**
+     * Handles toggling the archived status of the message.
+     * @param event The ActionEvent that triggered this method.
+     */
     private void handleArchiveToggle(ActionEvent event) {
         if (message != null) {
-            boolean newArchivedStatus = !message.isArchived();
-            if (messageService.updateMessageArchivedStatus(message.getId(), newArchivedStatus)) {
-                message.setArchived(newArchivedStatus); // Update local model
-                updateArchiveButtonAppearance(); // Update button UI
-                showAlert(Alert.AlertType.INFORMATION, "Success", "Message " + (newArchivedStatus ? "archived" : "unarchived") + ".");
-                // If archiving means it should disappear from inbox, you'd need to refresh the main list view
-                // This would be handled by EmailController's callback, e.g., onBackToList() which reloads the list.
-                if (callback != null) callback.onBackToList(); // Return to list and refresh it
-            } else {
-                showAlert(Alert.AlertType.ERROR, "Error", "Failed to update archived status.");
+            try {
+                boolean newArchivedStatus = !message.isArchived();
+                if (messageService.updateMessageArchivedStatus(message.getId(), newArchivedStatus)) {
+                    message.setArchived(newArchivedStatus);
+                    updateArchiveButtonAppearance();
+                    showAlert(Alert.AlertType.INFORMATION, "Success", "Message " + (newArchivedStatus ? "archived" : "unarchived") + ".");
+                    if (callback != null) {
+                        callback.onMessageArchived(message.getId(), newArchivedStatus); // Notify parent of archive change
+                        callback.onBackToList(); // Return to list and refresh it
+                    }
+                } else {
+                    showAlert(Alert.AlertType.ERROR, "Error", "Failed to update archived status.");
+                }
+            } catch (Exception e) {
+                System.err.println("Error toggling archive status: " + e.getMessage());
+                showAlert(Alert.AlertType.ERROR, "Error", "Failed to update archived status: " + e.getMessage());
             }
         }
     }
 
+    /**
+     * Updates the text of the star button based on the message's starred status.
+     */
     private void updateStarButtonAppearance() {
-        if (message != null) {
+        if (message != null && starButton != null) {
             starButton.setText(message.isStarred() ? "Unstar" : "Star");
-            // You can also change graphics here, e.g., starButton.setGraphic(new ImageView(...));
+            // Update color based on status
+            if (message.isStarred()) {
+                starButton.setStyle("-fx-background-color: #e67e22; -fx-text-fill: white;");
+            } else {
+                starButton.setStyle("-fx-background-color: #f39c12; -fx-text-fill: white;");
+            }
         }
     }
 
+    /**
+     * Updates the text of the archive button based on the message's archived status.
+     */
     private void updateArchiveButtonAppearance() {
-        if (message != null) {
+        if (message != null && archiveButton != null) {
             archiveButton.setText(message.isArchived() ? "Unarchive" : "Archive");
-            // You can also change graphics here
+            // Update color based on status
+            if (message.isArchived()) {
+                archiveButton.setStyle("-fx-background-color: #7f8c8d; -fx-text-fill: white;");
+            } else {
+                archiveButton.setStyle("-fx-background-color: #95a5a6; -fx-text-fill: white;");
+            }
         }
     }
 
+    /**
+     * Displays a generic alert dialog.
+     * @param alertType The type of alert to display (e.g., ERROR, INFORMATION).
+     * @param title The title of the alert dialog.
+     * @param content The main content message of the alert.
+     */
     private void showAlert(Alert.AlertType alertType, String title, String content) {
         Alert alert = new Alert(alertType);
         alert.setTitle(title);

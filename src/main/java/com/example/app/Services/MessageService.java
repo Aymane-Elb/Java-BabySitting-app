@@ -3,9 +3,12 @@ package com.example.app.Services;
 import com.example.app.Models.Message;
 import com.example.app.Models.User;
 import java.sql.*;
+import java.time.LocalDateTime; // Added for compatibility with Timestamp.toLocalDateTime()
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class MessageService {
     private String jdbcUrl;
@@ -23,7 +26,6 @@ public class MessageService {
 
     // Default constructor (used in EmailController)
     public MessageService() {
-        // !!! IMPORTANT: Replace with your actual database URL, user, and password !!!
         this.jdbcUrl = "jdbc:postgresql://localhost:5432/babysitting";
         this.dbUser = "Aymane";
         this.dbPassword = "RACHIDAx@436550";
@@ -71,7 +73,7 @@ public class MessageService {
     public List<Message> getAllMessagesForUser(int userId) {
         List<Message> messages = new ArrayList<>();
         String sql = "SELECT id, sender_id, receiver_id, sender_type, receiver_type, subject, content, timestamp, is_read, is_archived, is_starred " +
-                "FROM messages WHERE sender_id = ? OR receiver_id = ? ORDER BY timestamp DESC";
+                "FROM messages WHERE (sender_id = ? OR receiver_id = ?) AND is_archived = FALSE ORDER BY timestamp DESC"; // Exclude archived from 'All Messages'
 
         try (Connection conn = DriverManager.getConnection(jdbcUrl, dbUser, dbPassword);
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -125,7 +127,7 @@ public class MessageService {
     public List<Message> getStarredMessagesForUser(int userId) {
         List<Message> messages = new ArrayList<>();
         String sql = "SELECT id, sender_id, receiver_id, sender_type, receiver_type, subject, content, timestamp, is_read, is_archived, is_starred " +
-                "FROM messages WHERE (sender_id = ? OR receiver_id = ?) AND is_starred = TRUE ORDER BY timestamp DESC";
+                "FROM messages WHERE (sender_id = ? OR receiver_id = ?) AND is_starred = TRUE AND is_archived = FALSE ORDER BY timestamp DESC"; // Exclude archived
 
         try (Connection conn = DriverManager.getConnection(jdbcUrl, dbUser, dbPassword);
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -139,6 +141,34 @@ public class MessageService {
             }
         } catch (SQLException e) {
             System.err.println("Error retrieving starred messages for user: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return messages;
+    }
+
+    /**
+     * Retrieves archived messages for a given user (either sender or receiver).
+     *
+     * @param userId The ID of the user.
+     * @return A list of archived Message objects.
+     */
+    public List<Message> getArchivedMessagesForUser(int userId) {
+        List<Message> messages = new ArrayList<>();
+        String sql = "SELECT id, sender_id, receiver_id, sender_type, receiver_type, subject, content, timestamp, is_read, is_archived, is_starred " +
+                "FROM messages WHERE (sender_id = ? OR receiver_id = ?) AND is_archived = TRUE ORDER BY timestamp DESC";
+
+        try (Connection conn = DriverManager.getConnection(jdbcUrl, dbUser, dbPassword);
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, userId);
+            pstmt.setInt(2, userId);
+            ResultSet rs = pstmt.executeQuery();
+
+            while (rs.next()) {
+                messages.add(mapResultSetToMessage(rs));
+            }
+        } catch (SQLException e) {
+            System.err.println("Error retrieving archived messages for user: " + e.getMessage());
             e.printStackTrace();
         }
         return messages;
@@ -278,11 +308,11 @@ public class MessageService {
      * Retrieves the full name of a user given their ID and type.
      * This relies on the UserService to fetch user details.
      *
-     * @param userId       The ID of the user.
-     * @param receiverType
+     * @param userId The ID of the user.
+     * @param userType The type of the user (e.g., "client", "babysitter").
      * @return The user's full name, or a default string if not found.
      */
-    public String getUserFullName(int userId, String receiverType) { // Removed senderType as User object contains it
+    public String getUserFullName(int userId, String userType) {
         Optional<User> userOptional = userService.getUserById(userId);
         return userOptional.map(User::getName).orElse("Unknown User (ID: " + userId + ")");
     }

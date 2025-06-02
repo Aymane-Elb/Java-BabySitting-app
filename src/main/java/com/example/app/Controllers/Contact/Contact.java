@@ -171,7 +171,7 @@ public class Contact implements Initializable {
     private void handleInboxButtonClick(ActionEvent event) {
         try {
             // Define the path to your MessageList FXML. Adjust if necessary.
-            FXMLLoader loader = new FXMLLoader(Objects.requireNonNull(getClass().getResource("/Fxml/Messages/messages.fxml")));
+            FXMLLoader loader = new FXMLLoader(Objects.requireNonNull(getClass().getResource("/Fxml/Messages/archive.fxml")));
             Parent root = loader.load();
 
             // Optionally, get the controller of MessageList.fxml and pass data (e.g., current user)

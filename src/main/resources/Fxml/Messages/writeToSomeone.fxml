@@ -47,11 +47,6 @@
                <FontIcon iconColor="WHITE" iconLiteral="fas-home" iconSize="20" />
             </graphic>
          </Button>
-         <Button fx:id="settingBtn" alignment="BASELINE_LEFT" maxWidth="Infinity" mnemonicParsing="false" styleClass="btn" stylesheets="@../../Styles/message.css" text="Settings">
-            <graphic>
-               <FontIcon iconColor="WHITE" iconLiteral="fas-cog" iconSize="20" />
-            </graphic>
-         </Button>
          <VBox.margin>
             <Insets />
          </VBox.margin>

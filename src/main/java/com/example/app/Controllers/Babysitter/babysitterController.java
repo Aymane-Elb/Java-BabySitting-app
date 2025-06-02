@@ -20,9 +20,13 @@ import com.example.app.Controllers.Client.map;
 
 import java.io.IOException;
 import java.net.URL;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Objects;
 import java.util.ResourceBundle;
-
+import com.example.app.Models.Database;
 public class babysitterController implements Initializable {
     // Search related
     @FXML public TextField searchInput;
@@ -58,26 +62,136 @@ public class babysitterController implements Initializable {
         System.out.println("Babysitter interface initialized for user: " +
                 (model.getInstance() != null ? model.getInstance().getUsername() : "Unknown"));
     }
+    private double[] geocodeAddress(String address) {
+        if (address == null) return null;
 
+        String lowerAddress = address.toLowerCase();
+
+        // Morocco locations (since you're in Casablanca)
+        if (lowerAddress.contains("karama") || lowerAddress.contains("hay karama")) {
+            return new double[]{33.5731, -7.5898}; // Casablanca - Hay Karama area
+        }
+        if (lowerAddress.contains("casablanca")) {
+            return new double[]{33.5731, -7.5898}; // Casablanca center
+        }
+        if (lowerAddress.contains("rabat")) {
+            return new double[]{34.0209, -6.8416};
+        }
+        if (lowerAddress.contains("morocco") || lowerAddress.contains("maroc")) {
+            return new double[]{33.5731, -7.5898}; // Default to Casablanca
+        }
+
+        // International locations (for your test data)
+        if (lowerAddress.contains("paris")) {
+            return new double[]{48.8566, 2.3522};
+        }
+        if (lowerAddress.contains("new york")) {
+            return new double[]{40.7128, -74.0060};
+        }
+        if (lowerAddress.contains("boston")) {
+            return new double[]{42.3601, -71.0589};
+        }
+        if (lowerAddress.contains("chicago")) {
+            return new double[]{41.8781, -87.6298};
+        }
+        if (lowerAddress.contains("los angeles")) {
+            return new double[]{34.0522, -118.2437};
+        }
+        if (lowerAddress.contains("san francisco")) {
+            return new double[]{37.7749, -122.4194};
+        }
+        if (lowerAddress.contains("seattle")) {
+            return new double[]{47.6062, -122.3321};
+        }
+        if (lowerAddress.contains("miami")) {
+            return new double[]{25.7617, -80.1918};
+        }
+        if (lowerAddress.contains("denver")) {
+            return new double[]{39.7392, -104.9903};
+        }
+
+        // Default location if no match found (Casablanca)
+        return new double[]{33.5731, -7.5898};
+    }
+    private double[] parseOrGeocodeLocation(String location, String address) {
+        // First try to parse if location contains coordinates (format: "lat,lng")
+        if (location != null && location.contains(",")) {
+            try {
+                String[] parts = location.split(",");
+                if (parts.length == 2) {
+                    double lat = Double.parseDouble(parts[0].trim());
+                    double lng = Double.parseDouble(parts[1].trim());
+                    return new double[]{lat, lng};
+                }
+            } catch (NumberFormatException e) {
+                // Location string is not coordinates, continue to geocoding
+            }
+        }
+
+        // If location parsing failed, try geocoding the address
+        return geocodeAddress(address != null ? address : location);
+    }
+    private ObservableList<Client> fetchClientsFromDatabaseForList() {
+        ObservableList<Client> clients = FXCollections.observableArrayList();
+
+        String query = """
+        SELECT username, address, rating, price 
+        FROM users 
+        WHERE user_type = 'client' AND is_active = true
+        ORDER BY rating DESC
+        """;
+
+        try (Connection connection = Database.connect();
+             PreparedStatement statement = connection.prepareStatement(query);
+             ResultSet resultSet = statement.executeQuery()) {
+
+            while (resultSet.next()) {
+                String username = resultSet.getString("username");
+                String address = resultSet.getString("address");
+                double rating = resultSet.getDouble("rating");
+                double price = resultSet.getDouble("price");
+
+                clients.add(new Client(
+                        username,
+                        address != null ? address : "Non spécifiée",
+                        rating,
+                        price
+                ));
+            }
+
+            // If no clients found in database, add some default ones for testing
+            if (clients.isEmpty()) {
+                System.out.println("No clients found in database, using sample data");
+                clients.addAll(
+                        new Client("yamen", "karama II", 0.0, 0.0),
+                        new Client("aymane", "HAY Karama II", 0.0, 0.0)
+                );
+            }
+
+        } catch (SQLException e) {
+            System.err.println("Database error while fetching clients for list: " + e.getMessage());
+            e.printStackTrace();
+
+            // Fallback to sample data if database error
+            clients.addAll(
+                    new Client("yamen", "karama II", 0.0, 0.0),
+                    new Client("aymane", "HAY Karama II", 0.0, 0.0)
+            );
+        }
+
+        return clients;
+    }
     /**
      * Initialize the client data list
      */
     private void initializeClientData() {
-        // Create sample client data (in a real app, this would come from a database)
-        allClients = FXCollections.observableArrayList(
-                new Client("Jakie", "New York", 4.5, 15),
-                new Client("Thomas", "Boston", 3.8, 12),
-                new Client("Sophie", "Chicago", 4.2, 14),
-                new Client("Michel", "Los Angeles", 3.9, 13),
-                new Client("Emma", "San Francisco", 4.7, 18),
-                new Client("Noah", "Seattle", 4.0, 16),
-                new Client("Olivia", "Miami", 4.3, 15),
-                new Client("Liam", "Denver", 3.7, 13)
-        );
+        // Fetch real client data from database
+        allClients = fetchClientsFromDatabaseForList();
 
         // Set the items in the list view
         clientList.setItems(allClients);
     }
+
 
     /**
      * Setup the cell factory for client list display
@@ -232,6 +346,50 @@ public class babysitterController implements Initializable {
             searchForClients(searchInput.getText());
         }
     }
+    private ObservableList<DashboardController.ClientWithLocation> fetchClientsFromDatabase() {
+        ObservableList<DashboardController.ClientWithLocation> clientsWithLocation = FXCollections.observableArrayList();
+
+        String query = """
+        SELECT username, address, rating, price, location 
+        FROM users 
+        WHERE user_type = 'client' AND is_active = true
+        """;
+
+        try (Connection connection = Database.connect();
+             PreparedStatement statement = connection.prepareStatement(query);
+             ResultSet resultSet = statement.executeQuery()) {
+
+            while (resultSet.next()) {
+                String username = resultSet.getString("username");
+                String address = resultSet.getString("address");
+                double rating = resultSet.getDouble("rating");
+                double price = resultSet.getDouble("price");
+                String location = resultSet.getString("location");
+
+                // Parse coordinates from location string or geocode address
+                double[] coordinates = parseOrGeocodeLocation(location, address);
+
+                if (coordinates != null) {
+                    clientsWithLocation.add(new DashboardController.ClientWithLocation(
+                            username,
+                            address != null ? address : "Non spécifiée",
+                            rating,
+                            price,
+                            coordinates[0], // latitude
+                            coordinates[1]  // longitude
+                    ));
+                }
+            }
+
+        } catch (SQLException e) {
+            System.err.println("Database error while fetching clients: " + e.getMessage());
+            e.printStackTrace();
+            showAlert("Erreur Base de Données", "Erreur lors de la récupération des clients: " + e.getMessage());
+        }
+
+        return clientsWithLocation;
+    }
+
 
     /**
      * Map button handler
@@ -239,19 +397,15 @@ public class babysitterController implements Initializable {
     @FXML
     public void openMap(ActionEvent actionEvent) {
         try {
-            // Créer des données de clients avec localisation (dans un cas réel, ces données viendraient d'une base de données)
-            ObservableList<DashboardController.ClientWithLocation> clientsWithLocation = FXCollections.observableArrayList(
-                    new DashboardController.ClientWithLocation("Jakie", "New York", 4.5, 15, 48.8584, 2.2945),
-                    new DashboardController.ClientWithLocation("Thomas", "Boston", 3.8, 12, 48.8606, 2.3376),
-                    new DashboardController.ClientWithLocation("Sophie", "Chicago", 4.2, 14, 48.8737, 2.2950),
-                    new DashboardController.ClientWithLocation("Michel", "Los Angeles", 3.9, 13, 48.8417, 2.3185),
-                    new DashboardController.ClientWithLocation("Emma", "San Francisco", 4.7, 18, 48.8697, 2.3080),
-                    new DashboardController.ClientWithLocation("Noah", "Seattle", 4.0, 16, 48.8505, 2.3488),
-                    new DashboardController.ClientWithLocation("Olivia", "Miami", 4.3, 15, 48.8566, 2.3522),
-                    new DashboardController.ClientWithLocation("Liam", "Denver", 3.7, 13, 48.8530, 2.3499)
-            );
+            // Fetch real client data from database
+            ObservableList<DashboardController.ClientWithLocation> clientsWithLocation = fetchClientsFromDatabase();
 
-            // Utiliser directement la classe map existante pour afficher la carte avec les clients
+            if (clientsWithLocation.isEmpty()) {
+                showAlert("Information", "Aucun client trouvé dans la base de données.");
+                return;
+            }
+
+            // Use the existing map class to display the map with real clients
             map mapController = new map();
             mapController.openMapWithClients(clientsWithLocation);
 
@@ -289,12 +443,6 @@ public class babysitterController implements Initializable {
     @FXML
     public void openAccontWindow(ActionEvent actionEvent) {
         try {
-            Parent root = FXMLLoader.load(Objects.requireNonNull(getClass().getResource("/Fxml/User/Account.fxml")));
-            Stage stage = new Stage();
-            stage.setScene(new Scene(root));
-            stage.setTitle("Mon Compte");
-            stage.show();
-
             // Close current window
             Stage currentStage = (Stage) ((javafx.scene.Node) actionEvent.getSource()).getScene().getWindow();
             currentStage.close();

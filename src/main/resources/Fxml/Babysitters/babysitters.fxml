@@ -52,7 +52,7 @@
                     <FontIcon iconColor="WHITE" iconLiteral="fas-comment" />
                 </graphic>
             </Button>
-            <Button fx:id="accountBtn" mnemonicParsing="false" onAction="#openAccontWindow" prefHeight="61.0" prefWidth="120.0" styleClass="btn" stylesheets="@../../Styles/ClientSide.css" text="Account">
+            <Button fx:id="accountBtn" mnemonicParsing="false" onAction="#openAccontWindow" prefHeight="61.0" prefWidth="120.0" styleClass="btn" stylesheets="@../../Styles/ClientSide.css" text="Log Out">
                 <graphic>
                     <FontIcon iconColor="WHITE" iconLiteral="fas-user" />
                 </graphic>

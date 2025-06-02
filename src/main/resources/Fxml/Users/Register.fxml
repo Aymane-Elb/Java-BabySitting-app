@@ -45,7 +45,7 @@
             </Label>
             <ChoiceBox fx:id="accountSelectorChoice" maxWidth="Infinity">
                <stylesheets>
-                  <URL value="@../Styles/Register.css" />
+                     <URL value="@../Styles/Register.css" />
                   <URL value="@../Styles/Login.css" />
                </stylesheets></ChoiceBox>
 

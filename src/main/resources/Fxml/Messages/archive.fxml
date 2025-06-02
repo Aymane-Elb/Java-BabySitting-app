@@ -6,63 +6,92 @@
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 <?import org.kordamp.ikonli.javafx.FontIcon?>
 
 <AnchorPane prefHeight="600.0" prefWidth="1000.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.app.Controllers.Email.EmailController">
-   <HBox layoutX="74.0" layoutY="108.0" prefHeight="100.0" prefWidth="200.0" styleClass=".container" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-      <VBox prefHeight="600.0" prefWidth="186.0" styleClass="btnContainer" stylesheets="@../../Styles/message.css">
-         <Button fx:id="menuBtn" mnemonicParsing="false" prefHeight="38.0" prefWidth="182.0" styleClass="btn" stylesheets="@../../Styles/message.css" onAction="#openCloseMenu">
+
+   <HBox AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+
+      <VBox prefHeight="600.0" prefWidth="186.0" styleClass="btnContainer">
+         <Button fx:id="menuBtn" mnemonicParsing="false" onAction="#openCloseMenu" prefHeight="38.0" prefWidth="182.0" styleClass="btn" stylesheets="/Styles/ClientSide.css">
             <graphic>
                <FontIcon fx:id="menuBrtn" iconColor="WHITE" iconLiteral="fas-bars" iconSize="20" />
             </graphic>
          </Button>
-         <Button fx:id="inboxBtn" alignment="TOP_LEFT" mnemonicParsing="false" prefHeight="36.0" prefWidth="177.0" styleClass="btn" stylesheets="@../../Styles/message.css" text="  Inbox" onAction="#openInbox">
+
+         <Button fx:id="inboxBtn" alignment="TOP_LEFT" mnemonicParsing="false" onAction="#openInbox" prefHeight="36.0" prefWidth="177.0" styleClass="btn" stylesheets="/Styles/ClientSide.css" text="  Inbox">
             <graphic>
-               <FontIcon iconColor="WHITE" iconLiteral="fas-inbox" iconSize="20" text="" />
+               <FontIcon iconColor="WHITE" iconLiteral="fas-inbox" iconSize="20" />
             </graphic>
          </Button>
-         <Button fx:id="writeBtn" mnemonicParsing="false" prefHeight="36.0" prefWidth="170.0" styleClass="btn" stylesheets="@../../Styles/message.css" text="Write" onAction="#openWriteToSomeone">
+
+         <Button fx:id="writeBtn" mnemonicParsing="false" onAction="#openWriteToSomeone" prefHeight="36.0" prefWidth="170.0" styleClass="btn" stylesheets="/Styles/ClientSide.css" text="Write">
             <graphic>
-               <FontIcon iconColor="WHITE" iconLiteral="fas-pencil-alt" iconSize="20" text="   " />
+               <FontIcon iconColor="WHITE" iconLiteral="fas-pencil-alt" iconSize="20" />
             </graphic>
          </Button>
-         <Button fx:id="messageBtn" mnemonicParsing="false" prefHeight="36.0" prefWidth="173.0" styleClass="btn" stylesheets="@../../Styles/message.css" text=" Messages" >
+
+         <Button fx:id="messageBtn" mnemonicParsing="false" onAction="#openAllMessages" prefHeight="36.0" prefWidth="173.0" styleClass="btn" stylesheets="/Styles/ClientSide.css" text=" Messages">
             <graphic>
-               <FontIcon iconColor="WHITE" iconLiteral="fas-envelope" iconSize="20" text="" />
+               <FontIcon iconColor="WHITE" iconLiteral="fas-envelope" iconSize="20" />
             </graphic>
          </Button>
-         <Button fx:id="favoriteBtn" mnemonicParsing="false" prefHeight="36.0" prefWidth="179.0" styleClass="btn" stylesheets="@../../Styles/message.css" text="favorite">
+
+         <Button fx:id="favoriteBtn" mnemonicParsing="false" onAction="#openFavorite" prefHeight="36.0" prefWidth="179.0" styleClass="btn" stylesheets="/Styles/ClientSide.css" text="favorite">
             <graphic>
-               <FontIcon iconColor="WHITE" iconLiteral="fas-star" iconSize="20" text="  " />
+               <FontIcon iconColor="WHITE" iconLiteral="fas-star" iconSize="20" />
             </graphic>
          </Button>
-         <Button fx:id="homeBtn" mnemonicParsing="false" prefHeight="36.0" prefWidth="178.0" styleClass="btn" stylesheets="@../../Styles/message.css" text="Go Back" onAction="#openClientSide">
+
+         <Button fx:id="archivedBtn" mnemonicParsing="false" onAction="#openArchived" prefHeight="36.0" prefWidth="179.0" styleClass="btn" stylesheets="/Styles/ClientSide.css" text="Archived">
             <graphic>
-               <FontIcon iconColor="WHITE" iconLiteral="fas-home" iconSize="20" text="  " />
+               <FontIcon iconColor="WHITE" iconLiteral="fas-archive" iconSize="20" />
             </graphic>
          </Button>
-         <Button fx:id="settingBtn" mnemonicParsing="false" prefHeight="36.0" prefWidth="173.0" styleClass="btn" stylesheets="@../../Styles/message.css" text="settings" onAction="#openSettings">
+
+         <Button fx:id="homeBtn" mnemonicParsing="false" onAction="#openClientSideEnhanced" prefHeight="36.0" prefWidth="178.0" styleClass="btn" stylesheets="/Styles/ClientSide.css" text="Go Back">
             <graphic>
-               <FontIcon iconColor="WHITE" iconLiteral="fas-cog" iconSize="20" text="  " />
+               <FontIcon iconColor="WHITE" iconLiteral="fas-home" iconSize="20" />
             </graphic>
          </Button>
       </VBox>
+
       <VBox prefHeight="600.0" prefWidth="897.0">
          <VBox prefHeight="668.0" prefWidth="856.0">
+
             <HBox>
                <TextField fx:id="searchInput" prefHeight="37.0" prefWidth="672.0" promptText="Search">
                   <HBox.margin>
                      <Insets left="50.0" />
                   </HBox.margin>
                </TextField>
-               <Button fx:id="searchBtn" mnemonicParsing="false" prefHeight="22.0" prefWidth="50.0" styleClass="btn" stylesheets="@../../Styles/message.css">
+
+               <Button fx:id="searchBtn" mnemonicParsing="false" prefHeight="37.0" prefWidth="45.0" styleClass="btn" stylesheets="/Styles/ClientSide.css">
                   <graphic>
                      <FontIcon iconColor="WHITE" iconLiteral="fas-search" iconSize="16" />
                   </graphic>
                </Button>
+
+               <Button fx:id="backToListBtn" mnemonicParsing="false" prefHeight="37.0" prefWidth="100.0" styleClass="btn" stylesheets="/Styles/ClientSide.css" text="Back to List">
+                  <graphic>
+                     <FontIcon iconColor="WHITE" iconLiteral="fas-arrow-left" iconSize="16" />
+                  </graphic>
+                  <HBox.margin>
+                     <Insets left="10.0" />
+                  </HBox.margin>
+               </Button>
             </HBox>
-            <ListView fx:id="emailListView" prefHeight="600.0" prefWidth="856.0" styleClass="viewList" stylesheets="@../../Styles/ClientSide.css" />
+
+            <StackPane VBox.vgrow="ALWAYS">
+               <VBox fx:id="messageListViewContainer" prefHeight="200.0" prefWidth="100.0">
+                  <ListView fx:id="emailListView" prefHeight="600.0" prefWidth="856.0" styleClass="viewList" />
+               </VBox>
+
+               <VBox fx:id="messageDetailViewContainer" managed="false" prefHeight="200.0" prefWidth="100.0" visible="false" />
+            </StackPane>
+
          </VBox>
       </VBox>
    </HBox>
